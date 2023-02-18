@@ -44,6 +44,37 @@ def run_repetitions_egreedy():
 
     plot.save("epsilon")
 
+def run_repetitions_oi():
+    n_timesteps = 1000
+    n_rep = 500
+    smoothing_window = 31
+    
+    
+    plot = LearningCurvePlot("Comparison of different C values")
+    
+    for test in [0.1,0.5,1,2]:
+        
+        rewards = np.zeros((n_rep,n_timesteps))
+
+        for episode in range(n_rep):
+            env = BanditEnvironment(n_actions)
+            pi = OIPolicy(n_actions=n_actions,initial_value=test) # Initialize policy
+
+            for timestep in range(n_timesteps):
+                a = pi.select_action() # select action
+                r = env.act(a) # sample reward
+                pi.update(a,r) # update policy
+                rewards[episode][timestep] = r
+        
+        x = np.arange(n_timesteps)
+        y = np.mean(rewards,axis=0)
+        plot.add_curve(smooth(y,window=smoothing_window),f"c={test}")
+        std = np.std(y,axis=0)
+        lowy, highy = smooth(y-std,smoothing_window), smooth(y+std,smoothing_window)
+        plot.ax.fill_between(x, lowy, highy, alpha = 0.25)
+
+    plot.save("oi")
+
 def run_repetitions_ucb():
     n_timesteps = 1000
     n_rep = 500
@@ -90,9 +121,9 @@ def experiment(n_actions, n_timesteps, n_repetitions, smoothing_window):
     # Assignment 1: e-greedy
     #run_repetitions_egreedy()
     # Assignment 2: Optimistic init
-    
+    run_repetitions_oi()
     # Assignment 3: UCB
-    run_repetitions_ucb()
+    #run_repetitions_ucb()
     # Assignment 4: Comparison
     
     pass

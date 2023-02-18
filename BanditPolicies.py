@@ -36,16 +36,15 @@ class OIPolicy:
 
     def __init__(self, n_actions=10, initial_value=0.0, learning_rate=0.1):
         self.n_actions = n_actions
-        # TO DO: Add own code
-        pass
+        self.Q = np.zeros(n_actions)
+        self.Q.fill(initial_value)
+        self.mu = learning_rate
         
     def select_action(self):
-        # TO DO: Add own code
-        a = np.random.randint(0,self.n_actions) # Replace this with correct action selection
-        return a
+        return np.argmax(self.Q)
         
     def update(self,a,r):
-        # TO DO: Add own code
+        self.Q[a] += self.mu * (r - self.Q[a])
         pass
 
 class UCBPolicy:
@@ -56,6 +55,7 @@ class UCBPolicy:
         self.n = [0]*n_actions
     
     def select_action(self, c, t):
+
         return np.argmax([np.inf if self.n[action] == 0 else self.Q[action] + c*np.sqrt(np.log(t)/self.n[action]) for action in range(self.n_actions)])
         
     def update(self,a,r):
