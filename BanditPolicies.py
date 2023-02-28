@@ -9,7 +9,6 @@ By Thomas Moerland
 """
 import numpy as np
 from BanditEnvironment import BanditEnvironment
-from random import uniform, randint
 
 class EgreedyPolicy:
 
@@ -19,48 +18,46 @@ class EgreedyPolicy:
         self.n = np.zeros(n_actions)
         
     def select_action(self, epsilon):
-        # sample action from weighted actions
-        maxAction = np.argmax(self.Q)
-        weightRandom = epsilon/(self.n_actions - 1)
-        weights = [weightRandom] * self.n_actions
-        weights[maxAction] = 1 - epsilon
-        return np.random.choice(self.n_actions,p=weights)
-
+        e_gredy = np.zeros(self.n_actions)
+        e_gredy.fill(epsilon / (self.n_actions - 1))
+        e_gredy[np.argmax(self.Q)] = 1 - epsilon
+        
+        return np.random.choice(self.n_actions, p = e_gredy)
+        
         
     def update(self,a,r):
         self.n[a] += 1
-        self.Q[a] += (1/self.n[a])*(r - self.Q[a])
-        
+        self.Q[a] += (1 / self.n[a]) * (r - self.Q[a])
 
 class OIPolicy:
 
     def __init__(self, n_actions=10, initial_value=0.0, learning_rate=0.1):
         self.n_actions = n_actions
         self.Q = np.zeros(n_actions)
-        self.Q.fill(initial_value)
-        self.mu = learning_rate
+        self.Q.fill(initial_value) 
+        self.lr = learning_rate
         
     def select_action(self):
         return np.argmax(self.Q)
         
     def update(self,a,r):
-        self.Q[a] += self.mu * (r - self.Q[a])
-        pass
+        self.Q[a] +=  self.lr * (r - self.Q[a]) 
 
 class UCBPolicy:
 
     def __init__(self, n_actions=10):
         self.n_actions = n_actions
-        self.Q = [0]*n_actions
-        self.n = [0]*n_actions
+        self.Q = np.zeros(n_actions)
+        self.n = np.zeros(n_actions)
     
     def select_action(self, c, t):
-
-        return np.argmax([np.inf if self.n[action] == 0 else self.Q[action] + c*np.sqrt(np.log(t)/self.n[action]) for action in range(self.n_actions)])
+        
+        UCB = [np.inf if self.n[a] == 0 else (self.Q[a] + c * np.sqrt(np.log(t) / self.n[a])) for a in range(self.n_actions)]  
+        return np.argmax(UCB)
         
     def update(self,a,r):
         self.n[a] += 1
-        self.Q[a] += (1/self.n[a])*(r - self.Q[a])
+        self.Q[a] += (1 / self.n[a]) * (r - self.Q[a])
     
 def test():
     n_actions = 10
